@@ -20,6 +20,7 @@ public class UserController {
 
     /*注册账号*/
     @PostMapping("create")
+    @CrossOrigin
     public Map<String, Object> createAccount(User user){
 
         return userService.createAccount(user);
