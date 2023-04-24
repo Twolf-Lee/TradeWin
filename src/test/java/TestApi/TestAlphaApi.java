@@ -12,11 +12,12 @@ import java.util.List;
 
 public class TestAlphaApi {
     public static void main(String[] args) throws IOException {
-        /*OkHttpApi_Get okHttpApi = new OkHttpApi_Get();
+        /*
+        OkHttp_Get okHttp = new OkHttp_Get();
         String run=okHttpApi.run("https://www.alphavantage.co/query?function=FX_DAILY&from_symbol=EUR&to_symbol=USD&apikey=KITRCC1SJYWEBN7I");
         System.out.println("Test the daily FX prices(from EUR to USD):");
         System.out.println(run);
-        JSON jsonObject= JSON.parseObject(run);*/
+        JSON jsonObject= JSON.parseObject(run); */
         //System.out.println(jsonObject);
 
         OkHttp_Get api=new OkHttp_Get();

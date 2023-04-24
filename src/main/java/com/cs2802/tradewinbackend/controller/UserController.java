@@ -39,4 +39,6 @@ public class UserController {
 
         return userService.activateAccount(confirmCode);
     }
+
+
 }
