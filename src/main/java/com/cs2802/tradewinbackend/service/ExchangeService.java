@@ -14,7 +14,6 @@ public class ExchangeService {
         OkHttp_Get okHttpApi = new OkHttp_Get();
         String run=okHttpApi.run(api_url);
         JSONObject jsonObject= JSON.parseObject(run);
-        System.out.println(jsonObject);
         return jsonObject;
     }
 
@@ -22,7 +21,6 @@ public class ExchangeService {
         OkHttp_Get okHttpApi = new OkHttp_Get();
         String run=okHttpApi.run(api_url);
         JSONArray jsonArray= JSON.parseArray(run);
-        System.out.println(jsonArray);
         return jsonArray;
     }
 }

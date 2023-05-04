@@ -18,4 +18,14 @@ public class OkHttp_Get {
             return response.body().string();
         }
     }
+
+    public String run(String url,String name,String value) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader(name,value)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            return response.body().string();
+        }
+    }
 }

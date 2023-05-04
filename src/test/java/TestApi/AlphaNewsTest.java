@@ -11,7 +11,8 @@ import java.util.Iterator;
 
 public class AlphaNewsTest {
     public static void main(String[] args) throws IOException {
-        String api_url="https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=COIN,CRYPTO:BTC,FOREX:USD&time_from=20220410T0130&limit=200&apikey=KITRCC1SJYWEBN7I";
+        //String api_url="https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=COIN,CRYPTO:BTC,FOREX:USD&time_from=20220410T0130&limit=200&apikey=KITRCC1SJYWEBN7I";
+        String api_url="https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=AAPL&apikey=KITRCC1SJYWEBN7I";
         OkHttp_Get okHttpGet=new OkHttp_Get();
         String str=okHttpGet.run(api_url);
         JSONObject jsonObject= JSON.parseObject(str);
