@@ -36,7 +36,7 @@ public class ExchangeController {
     @GetMapping("currency-daily-price-chart")
     public JSONObject getExchangeList_Daily_Price() throws IOException {
         // Optimize part
-        // 获取当天日期，并格式化日期
+        // Get the date of the day and format the date
         Date date=new Date();
         System.out.println(date);
         SimpleDateFormat dateFormat=new SimpleDateFormat("YYYY-MM-dd");
@@ -45,7 +45,7 @@ public class ExchangeController {
         Calendar calendar=Calendar.getInstance();
         calendar.setTime(date);
         calendar.add(Calendar.DAY_OF_MONTH,-300);
-        date=calendar.getTime();
+        date=calendar.getTime();  // *
         String earliest_day=dateFormat.format(date);
         // Optimize end
 
@@ -106,8 +106,8 @@ public class ExchangeController {
         JSONArray result=new JSONArray();
         for(int i=0;i<5;i++){
             JSONObject name_value=new JSONObject();
-            name_value.put("value",i);
-            name_value.put("name",name_array[i]);
+            name_value.put("id",Integer.toString(i+1));
+            name_value.put("label",name_array[i]);
             result.add(i,name_value);
         }
         return result;
@@ -164,6 +164,7 @@ public class ExchangeController {
                     String run = okHttpGet.run(api_url, "apikey", "xvhJYlbcBPOOfYbJsyliEougAxTcqigr");
                     JSONObject jsonObject=JSON.parseObject(run);
 
+                    // 可以封装
                     JSONObject info=jsonObject.getJSONObject("info");
                     String price=info.getString("quote");
                     String title=from_list[i]+"to"+to_list[j];
@@ -204,8 +205,7 @@ public class ExchangeController {
         return result;
     }
 
-
-    // Card   （最新价格 - 最早价格）/ 最早价格
+    // 4. Card   （最新价格 - 最早价格）/ 最早价格
     // 1) BTC -> USDT
     @GetMapping("cardBTCtoUSDT")
     public JSONArray getRateBTCtoUSDT() throws IOException {
@@ -319,6 +319,11 @@ public class ExchangeController {
         result.add(0,one_pair_number);
         return result;
     }
+
+
+
+
+
 
     @GetMapping("CNY-IDR-FJD")
     public JSONObject getCNY_IDR_FJDList() throws IOException {

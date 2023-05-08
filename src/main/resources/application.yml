@@ -1,7 +1,27 @@
+#spring:
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/tradewin?serveTimeZone=Australia/sydney&useUnicode=true&characterEncoding=utf-8&&userSSL=false
+#    username: root
+#    password: root
+#  mail:
+#    protocol: smtp
+#    host: smtp.163.com
+#    port: 25
+#    username: twolflee@163.com
+#    password: VARXAKYIUKLKCRPK
+#    default-encoding: utf-8
+#    properties:
+#      mail:
+#        debug: true
+#mybatis:
+#  configuration:
+#    map-underscore-to-camel-case: true
+
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/tradewin?serveTimeZone=Australia/sydney&useUnicode=true&characterEncoding=utf-8&&userSSL=false
+    url: jdbc:mysql://localhost:3306/TradeWin?serveTimeZone=Australia/sydney&useUnicode=true&characterEncoding=utf-8&&userSSL=false
     username: root
     password: root
   mail:
@@ -14,6 +34,36 @@ spring:
     properties:
       mail:
         debug: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+  main:
+    allow-circular-references: true
+
+
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+
+mybatis-plus:
+  type-aliases-package: com.cs2802.tradewinbackend.pojo
+  configuration:
+    call-setters-on-nulls: false
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: full
+#spring:
+#  servlet:
+#    multipart:
+#      # 单个上传文件的最大大小，单位为字节
+#      max-file-size: 10MB
+#      # 整个请求中的最大文件大小，单位为字节
+#      max-request-size: 20MB
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+
+
+
