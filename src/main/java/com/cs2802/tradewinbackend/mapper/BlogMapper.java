@@ -1,7 +1,8 @@
 package com.cs2802.tradewinbackend.mapper;
 
+import com.cs2802.tradewinbackend.pojo.AntBlog;
 import com.cs2802.tradewinbackend.pojo.Blog;
-import com.cs2802.tradewinbackend.pojo.BlogUserName;
+import com.cs2802.tradewinbackend.pojo.TempBlog;
 import org.apache.ibatis.annotations.*;
 
 import java.time.LocalDateTime;
@@ -38,7 +39,7 @@ public interface BlogMapper {
 
 
     //返回所有blog
-    @Select("SELECT b.blog_id, b.blog_title, b.blog_content, b.blog_create_time, u.user_name " +
+  @Select("SELECT b.blog_id, b.blog_title, b.blog_content, b.blog_create_time, u.user_name " +
             "FROM blog AS b " +
             "JOIN users AS u ON b.user_id = u.user_id " +
             "ORDER BY b.blog_create_time DESC")
@@ -49,9 +50,6 @@ public interface BlogMapper {
             @Result(property = "blogCreateTime", column = "blog_create_time", javaType = LocalDateTime.class),
             @Result(property = "userName", column = "user_name", javaType = String.class)
     })
-    List<BlogUserName> selectAllBlog();
-
-
-
+    List<TempBlog> selectAllBlog();
 
 }

@@ -2,14 +2,17 @@ package com.cs2802.tradewinbackend.service;
 
 import com.cs2802.tradewinbackend.controller.BlogController;
 import com.cs2802.tradewinbackend.mapper.BlogMapper;
+import com.cs2802.tradewinbackend.pojo.AntBlog;
 import com.cs2802.tradewinbackend.pojo.Blog;
-import com.cs2802.tradewinbackend.pojo.BlogUserName;
+import com.cs2802.tradewinbackend.pojo.TempBlog;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,18 +26,6 @@ public class BlogService {
         return blogMapper.selectBlogByBlogId(id);
     }
 
-    public List<BlogUserName> searchBlog(int startpage) {
-        PageHelper.startPage(startpage, 5);
-//        PageInfo<Blog> pageInfo = new PageInfo<>(blogs);
-  /*      long total = pageInfo.getTotal();
-        int pageNum = pageInfo.getPageNum();
-        int pageSize = pageInfo.getPageSize();
-        int pages = pageInfo.getPages();
-        boolean hasNextPage = pageInfo.isHasNextPage();
-        boolean hasPreviousPage = pageInfo.isHasPreviousPage();*/
-
-        return blogMapper.selectAllBlog();
-    }
 
     public Map<String, Object> insertBlog(Blog blog){
         //初始化blog
@@ -88,14 +79,26 @@ public class BlogService {
         return resultMap;
     }
 
-    public List<BlogUserName> searchBlogWithoutStartPage() {
-//        PageInfo<Blog> pageInfo = new PageInfo<>(blogs);
-  /*      long total = pageInfo.getTotal();
-        int pageNum = pageInfo.getPageNum();
-        int pageSize = pageInfo.getPageSize();
-        int pages = pageInfo.getPages();
-        boolean hasNextPage = pageInfo.isHasNextPage();
-        boolean hasPreviousPage = pageInfo.isHasPreviousPage();*/
-        return blogMapper.selectAllBlog();
+    public List<AntBlog> findAllBlogs() {
+        List<AntBlog> antBlogList = new ArrayList<>();
+        for (TempBlog tempBlogs:
+             blogMapper.selectAllBlog()) {
+                antBlogList.add(concatobject(tempBlogs));
+        }
+
+        return antBlogList;
+
+    }
+
+    public AntBlog concatobject(TempBlog tempBlog){
+        AntBlog antBlog = new AntBlog();
+        antBlog.setTitle(tempBlog.getBlogTitle());
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String formattedDateTime = tempBlog.getBlogCreateTime().format(formatter);
+
+        antBlog.setDescription("Author: " + tempBlog.getUserName() + "  "+ formattedDateTime);
+        antBlog.setContent(tempBlog.getBlogContent());
+        return antBlog;
     }
 }
