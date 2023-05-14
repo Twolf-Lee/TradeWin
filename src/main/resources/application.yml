@@ -23,7 +23,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/TradeWin?serveTimeZone=Australia/sydney&useUnicode=true&characterEncoding=utf-8&&userSSL=false
     username: root
-    password: root
+    password: 19951005
   mail:
     protocol: smtp
     host: smtp.163.com
@@ -40,6 +40,16 @@ spring:
       max-request-size: 20MB
   main:
     allow-circular-references: true
+  cache:
+    type: redis
+    redis:
+#      缓存超时时间
+      time-to-live: 60000
+#      是否缓存空值
+      cache-null-values: false
+  redis:
+    host: 127.0.0.1
+    port: 6379
 
 
 mybatis:

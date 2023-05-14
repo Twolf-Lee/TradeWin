@@ -1,11 +1,8 @@
 package com.cs2802.tradewinbackend.controller;
 
+import com.cs2802.tradewinbackend.pojo.AntBlog;
 import com.cs2802.tradewinbackend.pojo.Blog;
-import com.cs2802.tradewinbackend.pojo.BlogUserName;
 import com.cs2802.tradewinbackend.service.BlogService;
-import com.github.pagehelper.PageInfo;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -20,14 +17,14 @@ public class BlogController {
     @Resource
     private BlogService blogService;
 
-    @GetMapping("findAllBlogs")
-    public List<BlogUserName> findAllBlogs(@RequestParam(required = true) int startpage, ModelMap model) {
-        List<BlogUserName> blogs = blogService.searchBlog(startpage);
-        PageInfo<BlogUserName> pageInfo = new PageInfo<>(blogs);
+/*    @GetMapping("findBlogs")
+    public List<AntBlog> findAllBlogs(@RequestParam(required = true) int startpage, ModelMap model) {
+        List<AntBlog> blogs = blogService.searchBlog(startpage);
+        PageInfo<AntBlog> pageInfo = new PageInfo<>(blogs);
         model.addAttribute("blogs", blogs);
         model.addAttribute("pageInfo", pageInfo);
         return blogs;
-    }
+    }*/
 
     @PostMapping("insertBlog")
     public Map<String,Object> insertBlog(Blog blog){
@@ -44,9 +41,9 @@ public class BlogController {
         return blogService.deleteBlog(blogId);
     }
 
-    @GetMapping("findAllBlogsWithoutStartpage")
-    public List<BlogUserName> findAllBlogsWithoutStartPage() {
-        List<BlogUserName> blogs = blogService.searchBlogWithoutStartPage();
+    @GetMapping("findAllBlogs")
+    public List<AntBlog> findAllBlogsWithoutStartPage() {
+        List<AntBlog> blogs = blogService.findAllBlogs();
         return blogs;
     }
 
