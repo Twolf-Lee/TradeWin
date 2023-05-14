@@ -113,7 +113,21 @@ public class ExchangeController {
         return result;
     }
 
-    // 4) AUD->CNY
+    // 4) 加密货币缩写列表
+    @GetMapping("crypto-name")
+    public JSONArray getCryptoName(){
+        String[] name_array=new String[]{"ETH","BTC","USDT","BNB","BUSD"};
+        JSONArray result=new JSONArray();
+        for(int i=0;i<5;i++){
+            JSONObject name_value=new JSONObject();
+            name_value.put("id",Integer.toString(i+1));
+            name_value.put("label",name_array[i]);
+            result.add(i,name_value);
+        }
+        return result;
+    }
+
+    // 5) AUD->CNY
     @GetMapping("AUDtoCNY")
     public JSONObject getAUDtoCNY() throws IOException {
         // Optimize part
@@ -321,11 +335,7 @@ public class ExchangeController {
     }
 
 
-
-
-
-
-    @GetMapping("CNY-IDR-FJD")
+   /* @GetMapping("CNY-IDR-FJD")
     public JSONObject getCNY_IDR_FJDList() throws IOException {
         List<String> api_list = new ArrayList<String>();  // 创建一个存放api url的列表
         JSONObject result = new JSONObject();  // 拼接所有的apiObject
@@ -376,7 +386,7 @@ public class ExchangeController {
             }
         }
         return result;
-    }
+    }*/
 
     @GetMapping("CNYtoIDR")
     public JSONObject CNYtoIDR() throws IOException {
