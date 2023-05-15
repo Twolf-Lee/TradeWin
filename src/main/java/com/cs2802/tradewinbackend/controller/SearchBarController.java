@@ -8,7 +8,6 @@ import com.cs2802.tradewinbackend.utils.OkHttp_Get;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -22,28 +21,133 @@ public class SearchBarController {
     @Resource
     private ExchangeService exchangeService = new ExchangeService();
 
-    // 接受前端SearchBar发送来的JSON数据
-    @PostMapping("postsearch")
-    public void getSearchParameter(@RequestBody Map<String,String> map, HttpSession session){
+    @PostMapping("searchchart")
+    public JSONObject searchChart(@RequestBody Map<String,String> map) throws IOException {
         String value=map.get("option");
         String[] parts=value.split("to");
-
         String from=parts[0];
         String to=parts[1];
 
-        System.out.println("postsearch interface from: "+from);
-        System.out.println("postsearch interface from: "+to);
+        Date date=new Date();
+        System.out.println(date);
+        SimpleDateFormat dateFormat=new SimpleDateFormat("YYYY-MM-dd");
+        String today=dateFormat.format(date);
 
-        session.setAttribute("from",from);
-        session.setAttribute("to",to);
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_MONTH,-300);
+        date=calendar.getTime();  //
+        String earliest_day=dateFormat.format(date);
+
+        String api_url = "https://api.apilayer.com/currency_data/timeframe?&source=" + from + "&currencies=" + to + "&start_date="+earliest_day+"&end_date="+today;
+        OkHttp_Get okHttpGet = new OkHttp_Get();
+
+        String run = okHttpGet.run(api_url, "apikey", "xvhJYlbcBPOOfYbJsyliEougAxTcqigr");
+        JSONObject jsonObject= JSON.parseObject(run);
+        JSONObject date_value=jsonObject.getJSONObject("quotes");
+
+        JSONObject one_result=new JSONObject();
+        Iterator<String> keys= date_value.keySet().iterator();
+        while (keys.hasNext()){
+            String one_key=keys.next();
+            JSONObject price_pair=date_value.getJSONObject(one_key);
+            String price=price_pair.getString(from+to);
+            one_result.put(one_key,price);
+        }
+        return one_result;
     }
 
-    @GetMapping("searchchart")
-    public JSONObject searchChart(HttpSession session) throws IOException {
-        String from=(String) session.getAttribute("from");
-        String to=(String) session.getAttribute("to");
-        System.out.println("searchchar interface from: "+from);
-        System.out.println("searchchar interface to: "+to);
+    @PostMapping("searchcard")
+    public JSONArray searchCard(@RequestBody Map<String,String> map) throws IOException {
+        String value=map.get("option");
+        String[] parts=value.split("to");
+        String from=parts[0];
+        String to=parts[1];
+
+        // Optimize part
+        Date date=new Date();
+        SimpleDateFormat dateFormat=new SimpleDateFormat("YYYY-MM-dd");
+        String today=dateFormat.format(date);
+        Calendar calendar=Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.add(Calendar.DAY_OF_MONTH,-300);
+        date=calendar.getTime();
+        String earliest_day=dateFormat.format(date);
+        // Optimize end
+
+        String api_url = "https://api.apilayer.com/currency_data/timeframe?&source="+from+"&currencies="+to+"&start_date="+earliest_day+"&end_date="+today;
+        OkHttp_Get okHttpGet = new OkHttp_Get();
+        String run = okHttpGet.run(api_url, "apikey", "xvhJYlbcBPOOfYbJsyliEougAxTcqigr");
+
+        JSONArray result=new JSONArray();
+
+        JSONObject jsonObject=JSON.parseObject(run);
+        JSONObject date_value=jsonObject.getJSONObject("quotes");
+        JSONObject date_price=new JSONObject();
+        Iterator<String> keys= date_value.keySet().iterator();
+        while (keys.hasNext()){
+            String one_key=keys.next();
+            JSONObject price_pair=date_value.getJSONObject(one_key);
+            String price=price_pair.getString(from+to);
+            date_price.put(one_key,price);
+        }
+
+        calendar.add(Calendar.DAY_OF_MONTH, +300);
+        date=calendar.getTime();
+        calendar.setTime(date);
+        String first_day=dateFormat.format(date);   // 有数据的最新一天
+        while (date_price.getString(first_day)==null){
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
+            date = calendar.getTime();
+            first_day = dateFormat.format(date);
+        }
+        System.out.println(first_day);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        date = calendar.getTime();
+        String second_day = dateFormat.format(date);  // 有数据的最新一天的前一天
+        while (date_price.getString(second_day) == null) {
+            calendar.add(Calendar.DAY_OF_MONTH, -1);
+            date = calendar.getTime();
+            second_day = dateFormat.format(date);
+        }
+        System.out.println(second_day);
+        String first_day_price_str=date_price.getString(first_day);
+        String second_day_price_str=date_price.getString(second_day);
+        System.out.println(first_day_price_str);
+        System.out.println(second_day_price_str);
+        Double first_day_price=Double.valueOf(first_day_price_str);
+        Double second_day_price=Double.valueOf(second_day_price_str);
+        Double calculation=(first_day_price-second_day_price)/second_day_price;
+
+        calculation=calculation*100;
+        BigDecimal bd=new BigDecimal(calculation);
+        Double cal_format=bd.setScale(2, RoundingMode.DOWN).doubleValue();
+        JSONObject one_pair_number=new JSONObject();
+        one_pair_number.put("title",from+"to"+to);
+        one_pair_number.put("rate",cal_format);
+        result.add(0,one_pair_number);
+        return result;
+    }
+
+    /*@GetMapping("searchchart")
+    public JSONObject searchChart(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        *//*HttpSession session=request.getSession();
+        List<Object> values=new ArrayList<>();
+        Enumeration<String> enumeration=session.getAttributeNames();
+        while(enumeration.hasMoreElements()){
+            String name=enumeration.nextElement();
+            System.out.println("get name: "+name);
+            values.add(session.getAttribute(name));
+        }
+        String from=values.get(0).toString();
+        String to=values.get(1).toString();
+        System.out.println("searchchart interface from: "+from);
+        System.out.println("searchchart interface to: "+to);*//*
+
+        String from=request.getAttribute("from").toString();
+        String to=request.getAttribute("to").toString();
+        System.out.println("searchchart interface from: "+from);
+        System.out.println("searchchart interface to: "+to);
 
         // Optimize part
         Date date=new Date();
@@ -74,9 +178,9 @@ public class SearchBarController {
             one_result.put(one_key,price);
         }
         return one_result;
-    }
+    }*/
 
-    @GetMapping("searchcard")
+   /* @GetMapping("searchcard")
     public JSONArray searchCard(HttpSession session) throws IOException {
         String from=(String) session.getAttribute("from");
         String to=(String) session.getAttribute("to");
@@ -146,14 +250,14 @@ public class SearchBarController {
         one_pair_number.put("rate",cal_format);
         result.add(0,one_pair_number);
         return result;
-    }
+    }*/
 
-    @GetMapping("searchchartcrypto")
-    public JSONObject getBTCtoUSDTchart(HttpSession session) throws IOException {
-        String from=(String) session.getAttribute("from");
-        String to=(String) session.getAttribute("to");
-        System.out.println(from);
-        System.out.println(to);
+    @PostMapping("searchchartcrypto")
+    public JSONObject getBTCtoUSDTchart(@RequestBody Map<String,String> map) throws IOException {
+        String value=map.get("option");
+        String[] parts=value.split("to");
+        String from=parts[0];
+        String to=parts[1];
 
         String api_url = "https://data.binance.com/api/v3/klines?symbol="+from+to+"&interval=1d";
         JSONArray jsonArray = exchangeService.getExchangeServiceArray(api_url);
@@ -169,18 +273,17 @@ public class SearchBarController {
             SimpleDateFormat dateFormat = new SimpleDateFormat("YYYY-MM-dd");
             Date date = new Date(timestamp);
             String formatedDate = dateFormat.format(date);
-
             result.put(formatedDate, close_price);
         }
         return result;
     }
 
-    @GetMapping("searchcardcrypto")
-    public JSONArray getRateBTCtoUSDT(HttpSession session) throws IOException {
-        String from=(String) session.getAttribute("from");
-        String to=(String) session.getAttribute("to");
-        System.out.println(from);
-        System.out.println(to);
+    @PostMapping("searchcardcrypto")
+    public JSONArray getRateBTCtoUSDT(@RequestBody Map<String,String> map) throws IOException {
+        String value=map.get("option");
+        String[] parts=value.split("to");
+        String from=parts[0];
+        String to=parts[1];
 
         String api_url = "https://data.binance.com/api/v3/klines?symbol="+from+to+"&interval=1d";
         OkHttp_Get okHttpGet=new OkHttp_Get();
@@ -218,7 +321,7 @@ public class SearchBarController {
         Double cal_format=bd.setScale(2, RoundingMode.DOWN).doubleValue();
 
         JSONObject one_pair_number=new JSONObject();
-        one_pair_number.put("title","BTCtoUSDT");
+        one_pair_number.put("title",from+to);
         one_pair_number.put("rate",cal_format);
         result.add(0,one_pair_number);
         return result;
