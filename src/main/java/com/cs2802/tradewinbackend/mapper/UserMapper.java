@@ -11,8 +11,8 @@ import java.util.List;
 public interface UserMapper {
 
     /*新增用户*/
-    @Insert("Insert into users (username, email, password, salt, confirm_code, activation_time, is_valid, gender, country, phone_number) " +
-            "Values(#{username}, #{email}, #{password}, #{salt}, #{confirmCode}, #{activationTime}, #{isValid}), #{gender}, #{country}, #{phoneNumber}")
+    @Insert("Insert into users (username, email, password, salt, confirm_code, activation_time, is_valid, gender, phone_number) " +
+            "Values(#{username}, #{email}, #{password}, #{salt}, #{confirmCode}, #{activationTime}, #{isValid}, #{gender}, #{phoneNumber})")
     int insertUser(User user);
 
     /*根据确认码查询用户*/

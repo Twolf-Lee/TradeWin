@@ -14,7 +14,6 @@ public class TempUser implements Serializable {
     private String username;
     private String email;
     private String gender;
-    private String country;
     private String phoneNumber;
 
 }

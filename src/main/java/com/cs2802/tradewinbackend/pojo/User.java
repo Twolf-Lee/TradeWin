@@ -22,7 +22,6 @@ public class User implements Serializable {
     private LocalDateTime activationTime;
     private Byte isValid;
     private String gender;
-    private String country;
     private String phoneNumber;
 
 }

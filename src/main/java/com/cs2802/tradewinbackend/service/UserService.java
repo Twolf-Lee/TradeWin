@@ -49,7 +49,8 @@ public class UserService {
         user.setConfirmCode(confirmCode);
         user.setActivationTime(ldt);
         user.setIsValid((byte) 0);
-
+        user.setGender(user.getGender());
+        user.setPhoneNumber(user.getPhoneNumber());
         //新增账号
         int result = userMapper.insertUser(user);
         Map<String, Object> resultMap = new HashMap<>();
@@ -57,11 +58,9 @@ public class UserService {
             //发送邮件
             String activateUrl = "http://localhost:8080/user/activate_account?confirmCode=" +confirmCode;
             mailService.senMailForActivateAccount(activateUrl,user.getEmail());
-            resultMap.put("code",200);
-            resultMap.put("message","Register successed");
+            resultMap.put("status",200);
         }else {
-            resultMap.put("code",400);
-            resultMap.put("message","Register Failed");
+            resultMap.put("status",400);
         }
         return resultMap;
     }
