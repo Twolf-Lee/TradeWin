@@ -23,7 +23,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/TradeWin?serveTimeZone=Australia/sydney&useUnicode=true&characterEncoding=utf-8&&userSSL=false
     username: root
-    password: 19951005
+    password: root
   mail:
     protocol: smtp
     host: smtp.163.com
