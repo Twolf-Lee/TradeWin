@@ -31,7 +31,7 @@ public class UserController {
 //    private StringRedisTemplate redisTemplate;
 
     /*注册账号*/
-    @PostMapping("create")
+    @GetMapping("create")
     @CrossOrigin
     public Map<String, Object> createAccount(User user){
 
@@ -84,6 +84,4 @@ public class UserController {
     //获取登录有效剩余时间
 
 }
-
-
 

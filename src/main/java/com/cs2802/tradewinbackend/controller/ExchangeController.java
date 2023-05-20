@@ -10,10 +10,7 @@ import com.cs2802.tradewinbackend.utils.OkHttp_Get;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -116,7 +113,7 @@ public class ExchangeController {
     // 4) 加密货币缩写列表
     @GetMapping("crypto-name")
     public JSONArray getCryptoName(){
-        String[] name_array=new String[]{"ETH","BTC","USDT","BNB","BUSD"};
+        String[] name_array=new String[]{"BTC","ETH","USDT","BNB","DOGE"};
         JSONArray result=new JSONArray();
         for(int i=0;i<5;i++){
             JSONObject name_value=new JSONObject();
@@ -127,7 +124,20 @@ public class ExchangeController {
         return result;
     }
 
-    // 5) AUD->CNY
+    // 5) 加密货币删减列表
+    @GetMapping("crypto-name-3")
+    public JSONArray getCryptoNameThree(){
+        String[] name_array=new String[]{"BTC","USDT","ETH"};
+        JSONArray result=new JSONArray();
+        for(int i=0;i<3;i++){
+            JSONObject name_value=new JSONObject();
+            name_value.put("id",Integer.toString(i+1));
+            name_value.put("label",name_array[i]);
+            result.add(i,name_value);
+        }
+        return result;
+    }
+    // 6) AUD->CNY
     @GetMapping("AUDtoCNY")
     public JSONObject getAUDtoCNY() throws IOException {
         // Optimize part
@@ -320,19 +330,183 @@ public class ExchangeController {
         String second_day_price_str=date_price.getString(second_day);
         System.out.println(first_day_price_str);
         System.out.println(second_day_price_str);
-        Double first_day_price=Double.valueOf(first_day_price_str);
-        Double second_day_price=Double.valueOf(second_day_price_str);
-        Double calculation=(first_day_price-second_day_price)/second_day_price;
+        double first_day_price=Double.valueOf(first_day_price_str);
+        double second_day_price=Double.valueOf(second_day_price_str);
+        double calculation=(first_day_price-second_day_price)/second_day_price;
 
         calculation=calculation*100;
         BigDecimal bd=new BigDecimal(calculation);
-        Double cal_format=bd.setScale(2, RoundingMode.DOWN).doubleValue();
+        double cal_format=bd.setScale(2, RoundingMode.DOWN).doubleValue();
         JSONObject one_pair_number=new JSONObject();
         one_pair_number.put("title","AUDtoCNY");
         one_pair_number.put("rate",cal_format);
         result.add(0,one_pair_number);
         return result;
     }
+
+    // 6. Calculator
+    // 1) 外汇 转 外汇 的计算器
+    @PostMapping("calculator")
+    public JSONObject doCalculator(@RequestBody Map<String, Object> map){
+        String from=(String)map.get("option1");  // currency
+        String to=(String)map.get("option2");   // currency
+        String money=map.get("value").toString();
+
+        String host = "https://ali-waihui.showapi.com";
+        String path = "/waihui-transform";
+        String method = "GET";
+        String appcode = "ebcc48918b4641c0863b277230e119d8";
+        Map<String, String> headers = new HashMap<String, String>();
+        //最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105
+        headers.put("Authorization", "APPCODE " + appcode);
+        Map<String, String> querys = new HashMap<String, String>();
+        querys.put("fromCode", from);
+        querys.put("money", money);
+        querys.put("toCode", to);
+
+        try {
+            HttpResponse response = HttpUtils.doGet(host, path, method, headers, querys);
+            //System.out.println("***"+response.getEntity().getContent());
+            //获取response的body
+            HttpEntity entity = response.getEntity();
+            String responsebody= EntityUtils.toString(entity);
+            //System.out.println(responsebody);
+            String[] lines = responsebody.split("\n");
+            Pattern pattern = Pattern.compile("\"showapi_res_body\":\\s*(\\{.*?\\})");
+            Matcher matcher = pattern.matcher(lines[5]);
+            if (matcher.find()) {
+                String output = matcher.group(1);
+                //System.out.println(result);
+                JSONObject jsonObject= JSON.parseObject(output);
+                String money_value=jsonObject.getString("money");
+                JSONObject result=new JSONObject();
+                result.put("money",money_value);
+                return result;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    // 2) 加密 转 外汇 的计算器
+    @PostMapping("calculator-crypto-currency")
+    public JSONObject calculatorCryptoCurrency(@RequestBody Map<String, Object> map) throws IOException {
+        String from=(String)map.get("option1");  // crypto
+        String to=(String)map.get("option2");   // currency
+        double money_value=Double.parseDouble(map.get("value").toString());
+
+        System.out.println(from);
+        System.out.println(to);
+        System.out.println(money_value);
+
+        // 例子  1 ETH (传参) = 1807 USD (默认)
+        OkHttp_Get okHttpGet=new OkHttp_Get();
+        String run=okHttpGet.run("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol="+from,"X-CMC_PRO_API_KEY","4c2d5cbd-6aaa-4025-af79-f23305a89e7e"); //4c2d5cbd-6aaa-4025-af79-f23305a89e7e
+        JSONObject new_api_object= JSON.parseObject(run);
+        String price=new_api_object.getJSONObject("data").getJSONObject(from).getJSONObject("quote").getJSONObject("USD").getString("price");
+        System.out.println(price);
+
+        String host = "https://ali-waihui.showapi.com";
+        String path = "/waihui-transform";
+        String method = "GET";
+        String appcode = "ebcc48918b4641c0863b277230e119d8";
+        Map<String, String> headers = new HashMap<String, String>();
+        //最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105
+        headers.put("Authorization", "APPCODE " + appcode);
+        Map<String, String> querys = new HashMap<String, String>();
+        querys.put("fromCode", "USD");
+        querys.put("money", price);
+        querys.put("toCode", to);
+
+        try {
+            HttpResponse response = HttpUtils.doGet(host, path, method, headers, querys);
+            //System.out.println("***"+response.getEntity().getContent());
+            //获取response的body
+            HttpEntity entity = response.getEntity();
+            String responsebody= EntityUtils.toString(entity);
+            //System.out.println(responsebody);
+            String[] lines = responsebody.split("\n");
+            Pattern pattern = Pattern.compile("\"showapi_res_body\":\\s*(\\{.*?\\})");
+            Matcher matcher = pattern.matcher(lines[5]);
+            if (matcher.find()) {
+                String output = matcher.group(1);
+
+                JSONObject jsonObject= JSON.parseObject(output);
+                String usd_currency=jsonObject.getString("money");
+
+                Double usd_currency_value=Double.valueOf(usd_currency);
+                System.out.println(usd_currency_value);
+
+                Double res=usd_currency_value*money_value;
+                String result_str=String.valueOf(res);
+                System.out.println(result_str);
+
+                JSONObject resultObject=new JSONObject();
+                resultObject.put("money",result_str);
+                return resultObject;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /*@PostMapping("calculator-currency-crypto")
+    public JSONObject calculatorCurrencyCrypto(@RequestBody Map<String, String> map){
+        String value=map.get("option");
+        String[] parts=value.split("to");
+        String from=parts[0]; // currency
+        String to=parts[1];  // crypto
+        String money=map.get("valuecal");
+
+        String host = "https://ali-waihui.showapi.com";
+        String path = "/waihui-transform";
+        String method = "GET";
+        String appcode = "ebcc48918b4641c0863b277230e119d8";
+        Map<String, String> headers = new HashMap<String, String>();
+        //最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105
+        headers.put("Authorization", "APPCODE " + appcode);
+        Map<String, String> querys = new HashMap<String, String>();
+        querys.put("fromCode", from);
+        querys.put("money", money);
+        querys.put("toCode", "USD");
+
+        try {
+            HttpResponse response = HttpUtils.doGet(host, path, method, headers, querys);
+            //System.out.println("***"+response.getEntity().getContent());
+            //获取response的body
+            HttpEntity entity = response.getEntity();
+            String responsebody= EntityUtils.toString(entity);
+            //System.out.println(responsebody);
+            String[] lines = responsebody.split("\n");
+            Pattern pattern = Pattern.compile("\"showapi_res_body\":\\s*(\\{.*?\\})");
+            Matcher matcher = pattern.matcher(lines[5]);
+            if (matcher.find()) {
+                String output = matcher.group(1);
+                //System.out.println(result);
+                JSONObject jsonObject= JSON.parseObject(output);
+                String currency_USD=jsonObject.getString("money");
+                double currency_USD_value=Double.valueOf(currency_USD);
+
+
+                // 例子  1 ETH (传参) = 1807 USD (默认)
+                OkHttp_Get okHttpGet=new OkHttp_Get();
+                String run=okHttpGet.run("https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol="+to,"X-CMC_PRO_API_KEY","4c2d5cbd-6aaa-4025-af79-f23305a89e7e"); //4c2d5cbd-6aaa-4025-af79-f23305a89e7e
+                JSONObject new_api_object= JSON.parseObject(run);
+                String price=new_api_object.getJSONObject("data").getJSONObject(to).getJSONObject("quote").getJSONObject("USD").getString("price");
+                double price_value=Double.valueOf(price);
+                double res=currency_USD_value*(1/price_value);
+                String result_str=String.valueOf(res);
+                JSONObject resultObject=new JSONObject();
+                resultObject.put("money",result_str);
+                return resultObject;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }*/
 
 
    /* @GetMapping("CNY-IDR-FJD")
