@@ -130,7 +130,7 @@ public class SearchBarController {
     }
 
     @PostMapping("searchchartcrypto")
-    public JSONObject getBTCtoUSDTchart(@RequestBody Map<String,String> map) throws IOException {
+    public JSONObject searchChartCrypto(@RequestBody Map<String,String> map) throws IOException {
         String value=map.get("option");
         String[] parts=value.split("to");
         String from=parts[0];
@@ -156,7 +156,7 @@ public class SearchBarController {
     }
 
     @PostMapping("searchcardcrypto")
-    public JSONArray getRateBTCtoUSDT(@RequestBody Map<String,String> map) throws IOException {
+    public JSONArray searchCardCrypto(@RequestBody Map<String,String> map) throws IOException {
         String value=map.get("option");
         String[] parts=value.split("to");
         String from=parts[0];
