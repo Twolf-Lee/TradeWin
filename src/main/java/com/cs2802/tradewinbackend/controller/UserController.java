@@ -45,6 +45,11 @@ public class UserController {
         return userService.loginAccount(email, password);
     }
 
+    @PostMapping("loginByPhoneNumber")
+    public Map<String, Object> loginAccountByPhoneNumber(@RequestParam("phoneNumber") String phoneNumber,
+                                            @RequestParam("password") String password){
+        return userService.loginAccountByPhoneNumber(phoneNumber, password);
+    }
 
     @GetMapping("activate_account")
     public Map<String, Object> activateAccount(String confirmCode){

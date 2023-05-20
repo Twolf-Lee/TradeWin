@@ -72,34 +72,59 @@ public class UserService {
         List<User> userList = userMapper.selectUserByEmail(email);
         //查询不到结果，返回：该账户不存在或未激活
         if (userList == null || userList.isEmpty()){
-            resultMap.put("code",400);
-            resultMap.put("messgae","The account is not exist.");
+            resultMap.put("status",403);
             return resultMap;
         }
         //查询到多个用户，返回：账号异常，请联系管理员
         if (userList.size() > 1){
-            resultMap.put("code",400);
-            resultMap.put("messgae","The account has some problem.");
+            resultMap.put("status",402);
             return resultMap;
         }
         //查询到一个用户，进行密码比对
         User u = userList.get(0);
         String md5pwd = SecureUtil.md5(password + u.getSalt());
         if (!u.getPassword().equals(md5pwd)){
-            resultMap.put("code",400);
-            resultMap.put("messgae","Password is wrong");
+            resultMap.put("status",401);
             return resultMap;
         }
         //登录成功
         String token = JwtUtil.sign(email,password);
         //存到Redis数据库
         redisTemplate.opsForValue().set("token",String.valueOf(u),Duration.ofMinutes(5));
-            resultMap.put("code", "200");
-            resultMap.put("message","Login Successgully");
+            resultMap.put("status", 201);
             resultMap.put("token", token);
             return resultMap;
     }
 
+    public Map<String, Object> loginAccountByPhoneNumber(String phoneNumber, String password){
+        Map<String, Object> resultMap = new HashMap<>();
+        //根据手机号查询用户
+        List<User> userList = userMapper.selectUserByPhoneNumber(phoneNumber);
+        //查询不到结果，返回：该账户不存在或未激活
+        if (userList == null || userList.isEmpty()){
+            resultMap.put("status",403);
+            return resultMap;
+        }
+        //查询到多个用户，返回：账号异常，请联系管理员
+        if (userList.size() > 1){
+            resultMap.put("status",402);
+            return resultMap;
+        }
+        //查询到一个用户，进行密码比对
+        User u = userList.get(0);
+        String md5pwd = SecureUtil.md5(password + u.getSalt());
+        if (!u.getPassword().equals(md5pwd)){
+            resultMap.put("status",401);
+            return resultMap;
+        }
+        //登录成功
+        String token = JwtUtil.sign(u.getEmail(),password);
+        //存到Redis数据库
+        redisTemplate.opsForValue().set("token",String.valueOf(u),Duration.ofMinutes(5));
+        resultMap.put("status", 201);
+        resultMap.put("token", token);
+        return resultMap;
+    }
     public Map<String, Object> activateAccount(String confirmCode) {
         Map<String, Object> resultMap = new HashMap<>();
         //根据确认码查询用户

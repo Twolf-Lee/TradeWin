@@ -27,5 +27,6 @@ public interface UserMapper {
     @Select("select email, password, salt from users where email = #{email} and is_valid = 1 ")
     List<User> selectUserByEmail(@Param("email") String email);
 
-
+    @Select("SELECT email, password, salt from users where phone_number = #{phoneNumber} and is_valid = 1")
+    List<User> selectUserByPhoneNumber(@Param("phoneNumber") String phoneNumber);
 }

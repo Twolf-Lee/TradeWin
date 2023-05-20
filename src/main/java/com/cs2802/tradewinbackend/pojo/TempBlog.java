@@ -14,5 +14,5 @@ public class TempBlog {
     private String blogTitle;
     private String blogContent;
     private LocalDateTime blogCreateTime;
-    private String userName;
+    private String username;
 }

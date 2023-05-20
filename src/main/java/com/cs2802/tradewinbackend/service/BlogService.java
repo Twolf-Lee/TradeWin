@@ -3,6 +3,7 @@ package com.cs2802.tradewinbackend.service;
 import com.cs2802.tradewinbackend.controller.BlogController;
 import com.cs2802.tradewinbackend.mapper.BlogMapper;
 import com.cs2802.tradewinbackend.pojo.AntBlog;
+import com.cs2802.tradewinbackend.pojo.AntEditBlog;
 import com.cs2802.tradewinbackend.pojo.Blog;
 import com.cs2802.tradewinbackend.pojo.TempBlog;
 import com.github.pagehelper.PageHelper;
@@ -27,69 +28,91 @@ public class BlogService {
     }
 
 
-    public Map<String, Object> insertBlog(Blog blog){
+    public Map<String, Object> insertBlog(Integer id, String input, String textArea){
         //初始化blog
-        blog.setBlogTitle(blog.getBlogTitle());
-        blog.setBlogContent(blog.getBlogContent());
-        blog.setUserId(blog.getUserId());
+        Blog blog = new Blog();
+        blog.setBlogTitle(input);
+        blog.setBlogContent(textArea);
+        blog.setUserId(id);
         blog.setBlogCreateTime(LocalDateTime.now());
         //插入blog
         int result = blogMapper.insertBlog(blog);
         Map<String, Object> resultMap = new HashMap<>();
         if (result > 0) {
-            resultMap.put("code",200);
-            resultMap.put("message","Insert blog successfully.");
+            resultMap.put("status",205);
         } else {
-            resultMap.put("code",400);
-            resultMap.put("message","Insert blog failed.");
+            resultMap.put("status",405);
         }
         return resultMap;
     }
 
-    public Map<String, Object> updateBlog(Blog blog){
-        Blog b = blogMapper.selectBlogByBlogId(blog.getBlogId());
-        System.out.println(b);
-        System.out.println(blog);
-        Map<String,Object> resultMap = new HashMap<>();
-        if(b == null) {
-            resultMap.put("code",400);
-            resultMap.put("message","The blog is not found.");
-        }else {
-            blog.setBlogTitle(blog.getBlogTitle());
-            blog.setBlogContent(blog.getBlogContent());
-            blog.setBlogCreateTime(LocalDateTime.now());
-            int i = blogMapper.updateBlog(blog);
-            resultMap.put("code",200);
-            resultMap.put("message","Update sucessfully.");
-        }
-        return resultMap;
+    public AntEditBlog getBlogInformation(Integer id, String title){
+        Blog blogByTitle = blogMapper.selectBlogByTitle(title, id);
+        AntEditBlog blog = new AntEditBlog();
+        blog.setInput(blogByTitle.getBlogTitle());
+        blog.setTextArea(blogByTitle.getBlogContent());
+        return blog;
     }
 
-    public Map<String, Object> deleteBlog(Integer blogId) {
-        Blog b = blogMapper.selectBlogByBlogId(blogId);
+    public Map<String, Object> updateBlog(String blogTitle, String textArea, Integer id) {
+        Blog blog = new Blog();
+        blog.setBlogTitle(blogTitle);
+        blog.setBlogContent(textArea);
+        blog.setUserId(id);
+        Map<String, Object> resultMap = new HashMap<>();
+        int result = blogMapper.updateBlog(blog);
+        if (result > 0) {
+            resultMap.put("status",206);
+        } else {
+            resultMap.put("status",406);
+        }
+        return resultMap;
+
+    }
+
+    public Map<String, Object> deleteBlog(String title, Integer id) {
+        Blog b = blogMapper.selectBlogByTitle(title, id);
         Map<String,Object> resultMap = new HashMap<>();
         if (b == null) {
-            resultMap.put("code",400);
-            resultMap.put("message","The blog is not found.");
+            resultMap.put("status",407);
         } else {
-            blogMapper.delteBlog(blogId);
-            resultMap.put("code",200);
-            resultMap.put("message","delete sucessfully.");
+            blogMapper.delteBlog(title,id);
+            resultMap.put("status",207);
         }
         return resultMap;
     }
 
     public List<AntBlog> findAllBlogs() {
         List<AntBlog> antBlogList = new ArrayList<>();
-        for (TempBlog tempBlogs:
-             blogMapper.selectAllBlog()) {
-                antBlogList.add(concatobject(tempBlogs));
+        List<TempBlog> blogList = blogMapper.selectAllBlog();
+
+        for (int i = 0; i < blogList.size(); i++) {
+            TempBlog tempBlogs = blogList.get(i);
+            antBlogList.add(concatobject(tempBlogs));
         }
 
         return antBlogList;
 
     }
 
+    public List<AntBlog> findUserAllBlogs(Integer id) {
+        List<AntBlog> antBlogList = new ArrayList<>();
+        List<TempBlog> blogList = blogMapper.selectUserAllBlog(id);
+
+        if (blogList != null){
+            for (int i = 0; i < blogList.size(); i++) {
+                TempBlog tempBlogs = blogList.get(i);
+                antBlogList.add(concatobject(tempBlogs));
+            }
+
+            return antBlogList;
+        } else{
+            System.out.println("nothing");
+            return null;
+        }
+
+
+    }
     public AntBlog concatobject(TempBlog tempBlog){
         AntBlog antBlog = new AntBlog();
         antBlog.setTitle(tempBlog.getBlogTitle());
@@ -97,8 +120,13 @@ public class BlogService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         String formattedDateTime = tempBlog.getBlogCreateTime().format(formatter);
 
-        antBlog.setDescription("Author: " + tempBlog.getUserName() + "  "+ formattedDateTime);
+        antBlog.setDescription("Author: " + tempBlog.getUsername() + "  "+ formattedDateTime);
         antBlog.setContent(tempBlog.getBlogContent());
         return antBlog;
+    }
+
+    //根据邮箱找到用户ID
+    public Integer findUserIdByEmail(String email){
+        return blogMapper.selectUserIdByEmail(email);
     }
 }
